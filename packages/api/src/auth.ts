@@ -23,15 +23,20 @@ export function verifyAdminToken(token: string): AdminTokenPayload {
 }
 
 export async function ensureDefaultAdmin() {
-  if (!hasDatabaseConfig()) return;
+  if (!hasDatabaseConfig()) {
+    throw new ApiError("Database config missing", 500);
+  }
 
   await connectToDatabase();
 
-  const count = await AdminModel.countDocuments();
-  if (count > 0) return;
+  const username = process.env.ADMIN_USERNAME;
+  const password = process.env.ADMIN_PASSWORD;
+  if (!username || !password) {
+    throw new ApiError("Admin credentials are not configured", 500);
+  }
 
-  const username = process.env.ADMIN_USERNAME || "admin";
-  const password = process.env.ADMIN_PASSWORD || "Admin12345!";
+  const existing = await AdminModel.findOne({ username }).lean();
+  if (existing) return;
 
   const passwordHash = await bcrypt.hash(password, 12);
   await AdminModel.create({ username, passwordHash });
@@ -39,15 +44,7 @@ export async function ensureDefaultAdmin() {
 
 export async function loginAdmin(username: string, password: string) {
   if (!hasDatabaseConfig()) {
-    const fallbackUsername = process.env.ADMIN_USERNAME || "admin";
-    const fallbackPassword = process.env.ADMIN_PASSWORD || "Admin12345!";
-
-    if (username !== fallbackUsername || password !== fallbackPassword) {
-      throw new ApiError("Invalid credentials", 401);
-    }
-
-    const token = signAdminToken({ sub: "local-admin", username: fallbackUsername });
-    return { token, username: fallbackUsername };
+    throw new ApiError("Database config missing", 500);
   }
 
   await connectToDatabase();
