@@ -25,7 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="mx-auto grid w-full max-w-7xl items-start gap-6 p-4 md:grid-cols-[250px_1fr] md:p-6">
         <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:sticky md:top-6">
           <p className="text-lg font-bold text-[#0c2c64]">Yapı İstanbul</p>
-          <p className="mt-1 text-xs text-slate-500">Admin Panel</p>
+          <p className="mt-1 text-xs text-slate-500">Yönetim Paneli</p>
           <nav className="mt-6 space-y-2">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href} className="block rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-[#eef4ff] hover:text-[#0c2c64]">

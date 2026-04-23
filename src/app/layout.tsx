@@ -8,8 +8,8 @@ const font = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Yapi Istanbul Admin",
-  description: "Yapi Istanbul yonetim paneli",
+  title: "Yapı İstanbul Yönetim Paneli",
+  description: "Yapı İstanbul yönetim paneli",
 };
 
 export default function RootLayout({

@@ -221,7 +221,7 @@ export function MeetingRequestsTable({ requests }: { requests: MeetingRow[] }) {
 
             <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
               <p><span className="font-semibold text-slate-900">Ad Soyad:</span> {selected.fullName}</p>
-              <p><span className="font-semibold text-slate-900">Email:</span> {selected.email}</p>
+              <p><span className="font-semibold text-slate-900">E-posta:</span> {selected.email}</p>
               {selected.phone ? <p><span className="font-semibold text-slate-900">Telefon:</span> {selected.phone}</p> : null}
               <p><span className="font-semibold text-slate-900">Tarih:</span> {formatDate(selected.createdAt)}</p>
               <p><span className="font-semibold text-slate-900">Durum:</span> {statusConfig[selected.status].label}</p>

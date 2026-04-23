@@ -14,7 +14,7 @@ export default async function AdminSettingsPage() {
       <form action={saveSettingsAction} className="mt-5 space-y-6">
         <div>
           <label className="block text-sm font-semibold text-[#0c2c64]">Site Logosu</label>
-          <p className="mt-1 text-xs text-slate-500">Header ve footer&apos;da gösterilecek logo</p>
+          <p className="mt-1 text-xs text-slate-500">Sayfa üstü ve alt bölümde gösterilecek logo</p>
           <div className="mt-2">
             <LogoUploadField initialValue={settings.siteLogo || ""} />
           </div>

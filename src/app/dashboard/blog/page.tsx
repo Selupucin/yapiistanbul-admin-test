@@ -12,13 +12,13 @@ export default async function AdminBlogPage() {
         <h2 className="text-xl font-semibold text-[#0c2c64]">Yeni Blog Yazısı</h2>
         <form action={createBlogAction} className="mt-4 space-y-3">
           <input name="title" placeholder="Başlık (TR)" className="w-full rounded-lg border border-slate-300 px-3 py-2" required />
-          <input name="titleEn" placeholder="Title (EN)" className="w-full rounded-lg border border-slate-300 px-3 py-2" required />
+          <input name="titleEn" placeholder="Başlık (EN)" className="w-full rounded-lg border border-slate-300 px-3 py-2" required />
           <p className="rounded-lg border border-[#d7e4f9] bg-[#f7fbff] px-3 py-2 text-xs text-[#32588e]">
             Slug başlıktan otomatik oluşturulur.
           </p>
           <BlogImageField />
           <textarea name="content" placeholder="İçerik (TR)" className="h-32 w-full rounded-lg border border-slate-300 px-3 py-2" required />
-          <textarea name="contentEn" placeholder="Content (EN)" className="h-32 w-full rounded-lg border border-slate-300 px-3 py-2" required />
+          <textarea name="contentEn" placeholder="İçerik (EN)" className="h-32 w-full rounded-lg border border-slate-300 px-3 py-2" required />
           <button className="btn-primary">+ Yayına Al</button>
         </form>
       </article>
