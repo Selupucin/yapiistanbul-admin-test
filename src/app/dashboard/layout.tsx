@@ -3,6 +3,7 @@ import { getAdminSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { logoutAction } from "@/app/actions";
 import { listMeetingRequests } from "@repo/api";
+import { DashboardNav } from "@/components/dashboard-nav";
 
 const navItems = [
   { href: "/dashboard", label: "Genel Bakış" },
@@ -26,13 +27,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:sticky md:top-6">
           <p className="text-lg font-bold text-[#0c2c64]">Yapı İstanbul</p>
           <p className="mt-1 text-xs text-slate-500">Yönetim Paneli</p>
-          <nav className="mt-6 space-y-2">
-            {navItems.map((item) => (
-              <Link key={item.href} href={item.href} className="block rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-[#eef4ff] hover:text-[#0c2c64]">
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <DashboardNav items={navItems} />
 
           <form action={logoutAction} className="mt-6">
             <button className="btn-secondary w-full">Çıkış Yap</button>
