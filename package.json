@@ -9,8 +9,8 @@
     "lint": "eslint src --ext .ts,.tsx"
   },
   "dependencies": {
-    "@repo/api": "*",
-    "@repo/db": "*",
+    "@repo/api": "file:packages/api",
+    "@repo/db": "file:packages/db",
     "next": "16.2.4",
     "react": "19.2.4",
     "react-dom": "19.2.4"

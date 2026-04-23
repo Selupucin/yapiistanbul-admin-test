@@ -1,0 +1,13 @@
+{
+  "name": "@repo/api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@repo/db": "file:../db",
+    "bcryptjs": "^3.0.3",
+    "jsonwebtoken": "^9.0.3",
+    "zod": "^4.3.6"
+  }
+}
