@@ -1,6 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 type Breakdown = { label: string; count: number };
 type ProjectClick = { project: string; count: number };
@@ -30,6 +45,11 @@ const RANGE_OPTIONS: Array<{ label: string; days: RangeKey }> = [
   { label: "Yıl", days: 365 },
 ];
 
+const MONTH_NAMES = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+const DAY_NAMES = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
+
+const DEVICE_COLORS = ["#0c2c64", "#1a4f9d", "#2f78d2", "#58a5f6", "#9bc8f7"];
+
 function rangeButton(active: boolean) {
   return active
     ? "rounded-full border border-[#1a4f9d] bg-[#1a4f9d] px-3 py-1 text-xs font-semibold text-white"
@@ -40,18 +60,12 @@ function getSummary(map: Record<string, AnalyticsSummary>, days: RangeKey) {
   return map[String(days)] || map["7"];
 }
 
-const MONTH_NAMES = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
-const DAY_NAMES = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
-
-type ChartPoint = { label: string; count: number };
-
-function aggregateChartData(raw: DailyVisit[], days: RangeKey): ChartPoint[] {
+function aggregateChartData(raw: DailyVisit[], days: RangeKey) {
   if (days === 365) {
-    // group by ISO week (Mon-based), max ~53 points
     const weeks = new Map<string, { sum: number; label: string }>();
     for (const item of raw) {
       const d = new Date(item.date);
-      const day = d.getDay() === 0 ? 6 : d.getDay() - 1; // 0=Mon
+      const day = d.getDay() === 0 ? 6 : d.getDay() - 1;
       const mon = new Date(d);
       mon.setDate(d.getDate() - day);
       const key = mon.toISOString().slice(0, 10);
@@ -65,7 +79,6 @@ function aggregateChartData(raw: DailyVisit[], days: RangeKey): ChartPoint[] {
       .map(([, v]) => ({ label: v.label, count: v.sum }));
   }
   if (days === 30) {
-    // group into 5-day buckets (~6 points)
     const buckets = new Map<number, { sum: number; label: string }>();
     for (const item of raw) {
       const d = new Date(item.date);
@@ -80,94 +93,148 @@ function aggregateChartData(raw: DailyVisit[], days: RangeKey): ChartPoint[] {
       .sort(([a], [b]) => a - b)
       .map(([, v]) => ({ label: v.label, count: v.sum }));
   }
-  // 1 or 7 days — raw daily
   return raw.map((item) => {
     const d = new Date(item.date);
     return { label: `${DAY_NAMES[d.getDay()]} ${d.getDate()}`, count: item.count };
   });
 }
 
-function smoothPath(pts: { x: number; y: number }[]): { line: string; area: string } {
-  if (pts.length === 1) {
-    return { line: `M ${pts[0].x},${pts[0].y}`, area: `M ${pts[0].x},${pts[0].y}` };
-  }
-  let line = `M ${pts[0].x},${pts[0].y}`;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const cpx = (pts[i].x + pts[i + 1].x) / 2;
-    line += ` C ${cpx},${pts[i].y} ${cpx},${pts[i + 1].y} ${pts[i + 1].x},${pts[i + 1].y}`;
-  }
-  const bottom = pts[0].y > pts[pts.length - 1].y ? pts[0].y + 20 : pts[pts.length - 1].y + 20;
-  const area = line + ` L ${pts[pts.length - 1].x},${bottom} L ${pts[0].x},${bottom} Z`;
-  return { line, area };
+function VisitsAreaChart({ data, days }: { data: DailyVisit[]; days: RangeKey }) {
+  const aggregated = aggregateChartData(data, days);
+  if (aggregated.length === 0) return <p className="mt-4 text-sm text-slate-500">Veri yok.</p>;
+
+  return (
+    <div className="chart-animate mt-4 h-[260px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={aggregated} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="visitsArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#1a4f9d" stopOpacity={0.32} />
+              <stop offset="100%" stopColor="#1a4f9d" stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
+          <XAxis dataKey="label" tick={{ fill: "#64748b", fontSize: 11 }} tickLine={false} axisLine={{ stroke: "#cbd5e1" }} interval="preserveStartEnd" />
+          <YAxis tick={{ fill: "#64748b", fontSize: 11 }} tickLine={false} axisLine={false} width={32} allowDecimals={false} />
+          <Tooltip
+            contentStyle={{ borderRadius: 12, border: "1px solid #cbd5e1", fontSize: 12 }}
+            labelStyle={{ color: "#0c2c64", fontWeight: 600 }}
+            formatter={(value) => [String(value), "Ziyaret"]}
+          />
+          <Area type="monotone" dataKey="count" stroke="#0c2c64" strokeWidth={2.5} fill="url(#visitsArea)" dot={{ fill: "#0c2c64", r: 3 }} activeDot={{ r: 5 }} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
 }
 
-function LineChart({ data, days }: { data: DailyVisit[]; days: RangeKey }) {
-  const W = 600;
-  const H = 200;
-  const PAD = { top: 16, right: 12, bottom: 36, left: 12 };
-  const chartW = W - PAD.left - PAD.right;
-  const chartH = H - PAD.top - PAD.bottom;
+function ProjectClicksBarChart({ data }: { data: ProjectClick[] }) {
+  if (data.length === 0) return <p className="mt-5 text-sm text-slate-500">Henüz proje tıklama verisi oluşmadı.</p>;
 
-  const aggregated = aggregateChartData(data, days);
-  const n = aggregated.length;
-
-  if (n === 0) return <p className="mt-4 text-sm text-slate-500">Veri yok.</p>;
-
-  const maxVal = Math.max(...aggregated.map((d) => d.count), 1);
-  const pts = aggregated.map((item, i) => ({
-    x: PAD.left + (n > 1 ? (i / (n - 1)) * chartW : chartW / 2),
-    y: PAD.top + chartH - (item.count / maxVal) * chartH,
-    label: item.label,
+  const sorted = [...data].sort((a, b) => b.count - a.count).slice(0, 10);
+  const chartData = sorted.map((item) => ({
+    name: item.project.length > 22 ? `${item.project.slice(0, 22)}…` : item.project,
+    fullName: item.project,
     count: item.count,
   }));
 
-  const { line, area } = smoothPath(pts);
-  const labelStep = Math.max(1, Math.ceil(n / 10));
+  return (
+    <div className="chart-animate mt-4 w-full" style={{ height: Math.max(chartData.length * 36, 160) }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 16, left: 0, bottom: 4 }} barCategoryGap={6}>
+          <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" horizontal={false} />
+          <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
+          <YAxis type="category" dataKey="name" tick={{ fill: "#475569", fontSize: 11 }} tickLine={false} axisLine={false} width={140} />
+          <Tooltip
+            contentStyle={{ borderRadius: 12, border: "1px solid #cbd5e1", fontSize: 12 }}
+            labelFormatter={(_l, payload) => payload?.[0]?.payload?.fullName ?? ""}
+            formatter={(value) => [String(value), "Tıklama"]}
+          />
+          <Bar dataKey="count" fill="#1a4f9d" radius={[0, 6, 6, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function DeviceDonut({ data }: { data: Breakdown[] }) {
+  if (data.length === 0) return <p className="mt-4 text-sm text-slate-500">Henüz cihaz verisi oluşmadı.</p>;
+
+  const total = data.reduce((acc, d) => acc + d.count, 0);
+  const chartData = data.map((d) => ({ name: d.label, value: d.count }));
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="chart-animate w-full" style={{ height: 200 }}>
-      <defs>
-        <linearGradient id="lgArea" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1a4f9d" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#1a4f9d" stopOpacity="0.02" />
-        </linearGradient>
-      </defs>
-      {/* horizontal grid lines */}
-      {[0.25, 0.5, 0.75, 1].map((t) => (
-        <line
-          key={t}
-          x1={PAD.left}
-          x2={W - PAD.right}
-          y1={PAD.top + chartH * (1 - t)}
-          y2={PAD.top + chartH * (1 - t)}
-          stroke="#e2e8f0"
-          strokeWidth="1"
-        />
-      ))}
-      <path d={area} fill="url(#lgArea)" />
-      <path
-        d={line}
-        fill="none"
-        stroke="#1a4f9d"
-        strokeWidth="2.5"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      {pts.map((p, i) => (
-        <g key={i}>
-          <circle cx={p.x} cy={p.y} r="4" fill="white" stroke="#1a4f9d" strokeWidth="2" />
-          <circle cx={p.x} cy={p.y} r="2" fill="#0c2c64" />
-        </g>
-      ))}
-      {pts.map(
-        (p, i) =>
-          i % labelStep === 0 && (
-            <text key={i} x={p.x} y={H - 4} textAnchor="middle" fontSize="9" fill="#64748b">
-              {p.label}
-            </text>
-          )
-      )}
-    </svg>
+    <div className="chart-animate mt-4 grid items-center gap-4 sm:grid-cols-[1fr_auto]">
+      <div className="h-[220px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={56} outerRadius={88} paddingAngle={2} stroke="#fff" strokeWidth={2}>
+              {chartData.map((_, i) => (
+                <Cell key={i} fill={DEVICE_COLORS[i % DEVICE_COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip
+              contentStyle={{ borderRadius: 12, border: "1px solid #cbd5e1", fontSize: 12 }}
+              formatter={(value, name) => {
+                const v = Number(value) || 0;
+                const pct = total ? Math.round((v / total) * 100) : 0;
+                return [`${v} (${pct}%)`, String(name)];
+              }}
+            />
+            <Legend
+              verticalAlign="bottom"
+              height={28}
+              iconType="circle"
+              wrapperStyle={{ fontSize: 11, color: "#475569" }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="space-y-2">
+        {chartData.map((item, i) => {
+          const pct = total ? Math.round((item.value / total) * 100) : 0;
+          return (
+            <div key={item.name} className="flex items-center gap-2 text-xs">
+              <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: DEVICE_COLORS[i % DEVICE_COLORS.length] }} />
+              <span className="capitalize text-slate-700">{item.name}</span>
+              <span className="ml-auto font-semibold text-[#0c2c64]">{item.value}</span>
+              <span className="text-slate-400">({pct}%)</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ReferrerBarChart({ data }: { data: Breakdown[] }) {
+  if (data.length === 0) return <p className="mt-4 text-sm text-slate-500">Henüz trafik kaynağı verisi oluşmadı.</p>;
+
+  const chartData = [...data]
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8)
+    .map((item) => ({
+      name: item.label.length > 20 ? `${item.label.slice(0, 20)}…` : item.label,
+      fullName: item.label,
+      count: item.count,
+    }));
+
+  return (
+    <div className="chart-animate mt-4 w-full" style={{ height: Math.max(chartData.length * 32, 160) }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 16, left: 0, bottom: 4 }} barCategoryGap={6}>
+          <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" horizontal={false} />
+          <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
+          <YAxis type="category" dataKey="name" tick={{ fill: "#475569", fontSize: 11 }} tickLine={false} axisLine={false} width={130} />
+          <Tooltip
+            contentStyle={{ borderRadius: 12, border: "1px solid #cbd5e1", fontSize: 12 }}
+            labelFormatter={(_l, payload) => payload?.[0]?.payload?.fullName ?? ""}
+            formatter={(value) => [String(value), "Ziyaret"]}
+          />
+          <Bar dataKey="count" fill="#2f78d2" radius={[0, 6, 6, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
@@ -184,18 +251,12 @@ export function DashboardAnalyticsPanels({ analyticsByRange }: PanelsProps) {
   const weeklyAnalytics = getSummary(analyticsByRange, 7);
   const monthlyAnalytics = getSummary(analyticsByRange, 30);
 
-  const maxProject = Math.max(...clicksAnalytics.projectClicks.map((item) => item.count), 1);
-  const maxDevice = Math.max(...devicesAnalytics.deviceBreakdown.map((item) => item.count), 1);
-  const maxReferrer = Math.max(...sourcesAnalytics.referrerBreakdown.map((item) => item.count), 1);
-
   const avgDaily = Math.round(visitsAnalytics.totalVisits / Math.max(visitsDays, 1));
   const peakDay = visitsAnalytics.dailyVisits.reduce(
     (best, item) => (item.count > best.count ? item : best),
     visitsAnalytics.dailyVisits[0] ?? { date: "", count: 0 }
   );
-  const peakDayName = peakDay.date
-    ? ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"][new Date(peakDay.date).getDay()]
-    : "-";
+  const peakDayName = peakDay.date ? DAY_NAMES[new Date(peakDay.date).getDay()] : "-";
 
   const weeklyConversion =
     weeklyAnalytics.totalVisits > 0
@@ -211,7 +272,7 @@ export function DashboardAnalyticsPanels({ analyticsByRange }: PanelsProps) {
       <section className="grid gap-5">
         <article className="panel-card">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-lg font-semibold text-[#0c2c64]">Ziyaret İnfografiği ({visitsDays} Gün)</h3>
+            <h3 className="text-lg font-semibold text-[#0c2c64]">Ziyaret Trendi ({visitsDays} Gün)</h3>
             <div className="flex items-center gap-2">
               <p className="rounded-full bg-[#edf4ff] px-3 py-1 text-xs font-semibold text-[#1a4f9d]">Toplam: {visitsAnalytics.totalVisits}</p>
               <div className={`rounded-full px-2 py-1 text-xs font-semibold ${visitsAnalytics.visitsTrend >= 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
@@ -243,9 +304,7 @@ export function DashboardAnalyticsPanels({ analyticsByRange }: PanelsProps) {
             </div>
           </div>
 
-          <div className="mt-5">
-            <LineChart key={visitsDays} data={visitsAnalytics.dailyVisits} days={visitsDays} />
-          </div>
+          <VisitsAreaChart key={visitsDays} data={visitsAnalytics.dailyVisits} days={visitsDays} />
         </article>
 
         <article className="panel-card">
@@ -267,32 +326,14 @@ export function DashboardAnalyticsPanels({ analyticsByRange }: PanelsProps) {
             ))}
           </div>
 
-          {clicksAnalytics.projectClicks.length > 0 ? (
-            <div className="mt-5 space-y-3">
-              {clicksAnalytics.projectClicks.map((item) => (
-                <div key={item.project} className="flex items-center gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs text-slate-700" title={item.project}>{item.project}</p>
-                  </div>
-                  <div className="flex w-16 items-center justify-between gap-1">
-                    <div className="h-5 flex-1 overflow-hidden rounded-full bg-slate-100">
-                      <div className="h-full bg-gradient-to-r from-[#0c2c64] to-[#1a4f9d]" style={{ width: `${Math.max((item.count / maxProject) * 100, 4)}%` }} />
-                    </div>
-                    <span className="w-8 text-right text-xs font-semibold text-slate-700">{item.count}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-5 text-sm text-slate-500">Henüz proje tıklama verisi oluşmadı.</p>
-          )}
+          <ProjectClicksBarChart key={clicksDays} data={clicksAnalytics.projectClicks} />
         </article>
       </section>
 
       <section className="grid gap-5 lg:grid-cols-2">
         <article className="panel-card min-h-[300px]">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-lg font-semibold text-[#0c2c64]">Ziyaretçi Cihaz Dağılımı ({devicesDays} Gün)</h3>
+            <h3 className="text-lg font-semibold text-[#0c2c64]">Cihaz Dağılımı ({devicesDays} Gün)</h3>
             <p className="rounded-full bg-[#edf4ff] px-3 py-1 text-xs font-semibold text-[#1a4f9d]">Pageview</p>
           </div>
 
@@ -304,26 +345,12 @@ export function DashboardAnalyticsPanels({ analyticsByRange }: PanelsProps) {
             ))}
           </div>
 
-          {devicesAnalytics.deviceBreakdown.length > 0 ? (
-            <div className="mt-4 space-y-2">
-              {devicesAnalytics.deviceBreakdown.map((item) => (
-                <div key={item.label} className="flex items-center gap-2">
-                  <span className="w-28 text-xs capitalize text-slate-600">{item.label}</span>
-                  <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100">
-                    <div className="h-full bg-gradient-to-r from-[#1f6bbf] to-[#58a5f6]" style={{ width: `${Math.max((item.count / maxDevice) * 100, 4)}%` }} />
-                  </div>
-                  <span className="w-8 text-right text-xs font-semibold text-slate-700">{item.count}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-4 text-sm text-slate-500">Henüz cihaz verisi oluşmadı.</p>
-          )}
+          <DeviceDonut key={devicesDays} data={devicesAnalytics.deviceBreakdown} />
         </article>
 
         <article className="panel-card min-h-[300px]">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-lg font-semibold text-[#0c2c64]">Trafik Kaynağı Dağılımı ({sourcesDays} Gün)</h3>
+            <h3 className="text-lg font-semibold text-[#0c2c64]">Trafik Kaynağı ({sourcesDays} Gün)</h3>
             <p className="rounded-full bg-[#edf4ff] px-3 py-1 text-xs font-semibold text-[#1a4f9d]">Kaynak</p>
           </div>
 
@@ -335,21 +362,7 @@ export function DashboardAnalyticsPanels({ analyticsByRange }: PanelsProps) {
             ))}
           </div>
 
-          {sourcesAnalytics.referrerBreakdown.length > 0 ? (
-            <div className="mt-4 space-y-2">
-              {sourcesAnalytics.referrerBreakdown.map((item) => (
-                <div key={item.label} className="flex items-center gap-2">
-                  <span className="flex-1 truncate text-xs text-slate-600" title={item.label}>{item.label}</span>
-                  <div className="h-3 w-24 overflow-hidden rounded-full bg-slate-100">
-                    <div className="h-full bg-gradient-to-r from-[#0c2c64] to-[#2f78d2]" style={{ width: `${Math.max((item.count / maxReferrer) * 100, 4)}%` }} />
-                  </div>
-                  <span className="w-8 text-right text-xs font-semibold text-slate-700">{item.count}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-4 text-sm text-slate-500">Henüz trafik kaynağı verisi oluşmadı.</p>
-          )}
+          <ReferrerBarChart key={sourcesDays} data={sourcesAnalytics.referrerBreakdown} />
         </article>
       </section>
 
@@ -374,10 +387,18 @@ export function DashboardAnalyticsPanels({ analyticsByRange }: PanelsProps) {
 
         <article className="panel-card min-h-[210px]">
           <p className="text-sm text-slate-500">Trend Karşılaştırma</p>
-          <p className="mt-2 text-sm text-slate-700">Son 7 gün ziyaret: <strong className="text-[#0c2c64]">{weeklyAnalytics.totalVisits}</strong></p>
-          <p className="mt-1 text-sm text-slate-700">Son 30 gün ziyaret: <strong className="text-[#0c2c64]">{monthlyAnalytics.totalVisits}</strong></p>
-          <p className="mt-3 text-xs text-slate-500">Haftalık trend: {weeklyAnalytics.visitsTrend >= 0 ? "↑" : "↓"} {Math.abs(weeklyAnalytics.visitsTrend)}%</p>
-          <p className="mt-1 text-xs text-slate-500">Aylık trend: {monthlyAnalytics.visitsTrend >= 0 ? "↑" : "↓"} {Math.abs(monthlyAnalytics.visitsTrend)}%</p>
+          <p className="mt-2 text-sm text-slate-700">
+            Son 7 gün ziyaret: <strong className="text-[#0c2c64]">{weeklyAnalytics.totalVisits}</strong>
+          </p>
+          <p className="mt-1 text-sm text-slate-700">
+            Son 30 gün ziyaret: <strong className="text-[#0c2c64]">{monthlyAnalytics.totalVisits}</strong>
+          </p>
+          <p className="mt-3 text-xs text-slate-500">
+            Haftalık trend: {weeklyAnalytics.visitsTrend >= 0 ? "↑" : "↓"} {Math.abs(weeklyAnalytics.visitsTrend)}%
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Aylık trend: {monthlyAnalytics.visitsTrend >= 0 ? "↑" : "↓"} {Math.abs(monthlyAnalytics.visitsTrend)}%
+          </p>
         </article>
       </section>
     </>
