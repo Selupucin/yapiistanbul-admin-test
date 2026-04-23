@@ -33,17 +33,21 @@ export async function loginAction(formData: FormData) {
   const username = String(formData.get("username") || "");
   const password = String(formData.get("password") || "");
 
-  const { token } = await loginAdmin(username, password);
-  const store = await cookies();
-  store.set(ADMIN_AUTH_COOKIE, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
-    path: "/",
-  });
+  try {
+    const { token } = await loginAdmin(username, password);
+    const store = await cookies();
+    store.set(ADMIN_AUTH_COOKIE, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
 
-  redirect("/dashboard");
+    redirect("/dashboard");
+  } catch {
+    redirect("/?error=invalid_credentials");
+  }
 }
 
 export async function logoutAction() {

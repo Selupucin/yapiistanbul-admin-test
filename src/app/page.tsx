@@ -2,9 +2,16 @@ import { redirect } from "next/navigation";
 import { loginAction } from "./actions";
 import { getAdminSession } from "@/lib/session";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<{ error?: string }>;
+}) {
   const session = await getAdminSession();
   if (session) redirect("/dashboard");
+
+  const params = await searchParams;
+  const showInvalidCredentials = params?.error === "invalid_credentials";
 
   return (
     <div className="grid min-h-screen items-center bg-[linear-gradient(160deg,#f1f6ff_0%,#ffffff_35%,#e9f1ff_100%)] p-4 lg:grid-cols-2 lg:p-10">
@@ -20,6 +27,11 @@ export default async function Home() {
         <form action={loginAction} className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl">
           <h2 className="text-2xl font-semibold text-slate-900">Yönetici Girişi</h2>
           <p className="mt-2 text-sm text-slate-600">Yönetim paneline devam etmek için bilgilerinizi girin.</p>
+          {showInvalidCredentials ? (
+            <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              Kullanıcı adı veya şifre hatalı. Lütfen tekrar deneyin.
+            </p>
+          ) : null}
           <div className="mt-6 space-y-4">
             <input name="username" placeholder="Kullanıcı adı" className="w-full rounded-lg border border-slate-300 px-3 py-2" required />
             <input name="password" type="password" placeholder="Şifre" className="w-full rounded-lg border border-slate-300 px-3 py-2" required />
