@@ -87,19 +87,11 @@ function aggregateChartData(raw: DailyVisit[], days: RangeKey) {
       .map(([, v]) => ({ label: v.label, count: v.sum }));
   }
   if (days === 30) {
-    const buckets = new Map<number, { sum: number; label: string }>();
-    for (const item of raw) {
+    // Ay görünümü: günlük noktaları göster (interval=preserveStartEnd ile etiketler sıkışmaz).
+    return raw.map((item) => {
       const d = parseLocalDate(item.date);
-      const bucket = Math.floor(d.getDate() / 5);
-      const key = d.getFullYear() * 1000 + d.getMonth() * 10 + bucket;
-      if (!buckets.has(key)) {
-        buckets.set(key, { sum: 0, label: `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}` });
-      }
-      buckets.get(key)!.sum += item.count;
-    }
-    return [...buckets.entries()]
-      .sort(([a], [b]) => a - b)
-      .map(([, v]) => ({ label: v.label, count: v.sum }));
+      return { label: `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`, count: item.count };
+    });
   }
   return raw.map((item) => {
     const d = parseLocalDate(item.date);
@@ -218,22 +210,48 @@ function DeviceDonut({ data }: { data: Breakdown[] }) {
 function ReferrerBarChart({ data }: { data: Breakdown[] }) {
   if (data.length === 0) return <p className="mt-4 text-sm text-slate-500">Henüz trafik kaynağı verisi oluşmadı.</p>;
 
+  // Başa kaynak adını dostane formatıyla göster (örn. "google.com" -> "Google", "direct" -> "Doğrudan").
+  function prettifySource(src: string): string {
+    if (!src || src === "direct") return "Doğrudan";
+    const host = src.replace(/^www\./, "");
+    const known: Record<string, string> = {
+      "google.com": "Google",
+      "google.com.tr": "Google TR",
+      "bing.com": "Bing",
+      "yandex.com": "Yandex",
+      "yandex.com.tr": "Yandex TR",
+      "facebook.com": "Facebook",
+      "instagram.com": "Instagram",
+      "x.com": "X / Twitter",
+      "twitter.com": "X / Twitter",
+      "linkedin.com": "LinkedIn",
+      "youtube.com": "YouTube",
+      "t.co": "X / Twitter",
+      "l.facebook.com": "Facebook",
+      "lm.facebook.com": "Facebook",
+    };
+    return known[host] || host;
+  }
+
   const chartData = [...data]
     .sort((a, b) => b.count - a.count)
     .slice(0, 8)
-    .map((item) => ({
-      name: item.label.length > 20 ? `${item.label.slice(0, 20)}…` : item.label,
-      fullName: item.label,
-      count: item.count,
-    }));
+    .map((item) => {
+      const pretty = prettifySource(item.label);
+      return {
+        name: pretty.length > 28 ? `${pretty.slice(0, 28)}…` : pretty,
+        fullName: pretty === item.label ? pretty : `${pretty} (${item.label})`,
+        count: item.count,
+      };
+    });
 
   return (
-    <div className="chart-animate mt-4 w-full" style={{ height: Math.max(chartData.length * 32, 160) }}>
+    <div className="chart-animate mt-4 w-full" style={{ height: Math.max(chartData.length * 36, 180) }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 16, left: 0, bottom: 4 }} barCategoryGap={6} tabIndex={-1}>
           <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" horizontal={false} />
           <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
-          <YAxis type="category" dataKey="name" tick={{ fill: "#475569", fontSize: 11 }} tickLine={false} axisLine={false} width={130} />
+          <YAxis type="category" dataKey="name" tick={{ fill: "#475569", fontSize: 11 }} tickLine={false} axisLine={false} width={170} />
           <Tooltip
             contentStyle={{ borderRadius: 12, border: "1px solid #cbd5e1", fontSize: 12 }}
             labelFormatter={(_l, payload) => payload?.[0]?.payload?.fullName ?? ""}
