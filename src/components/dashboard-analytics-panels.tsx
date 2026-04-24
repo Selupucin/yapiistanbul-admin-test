@@ -48,6 +48,14 @@ const RANGE_OPTIONS: Array<{ label: string; days: RangeKey }> = [
 const MONTH_NAMES = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
 const DAY_NAMES = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
 
+// "YYYY-MM-DD" stringini lokal saat dilimiyle parse eder.
+// (new Date("YYYY-MM-DD") UTC olarak yorumlanir ve TZ kaymasi yaratir.)
+function parseLocalDate(value: string): Date {
+  const [y, m, d] = value.split("-").map((v) => Number(v));
+  if (!y || !m || !d) return new Date(value);
+  return new Date(y, m - 1, d);
+}
+
 const DEVICE_COLORS = ["#0c2c64", "#1a4f9d", "#2f78d2", "#58a5f6", "#9bc8f7"];
 
 function rangeButton(active: boolean) {
@@ -64,11 +72,11 @@ function aggregateChartData(raw: DailyVisit[], days: RangeKey) {
   if (days === 365) {
     const weeks = new Map<string, { sum: number; label: string }>();
     for (const item of raw) {
-      const d = new Date(item.date);
+      const d = parseLocalDate(item.date);
       const day = d.getDay() === 0 ? 6 : d.getDay() - 1;
       const mon = new Date(d);
       mon.setDate(d.getDate() - day);
-      const key = mon.toISOString().slice(0, 10);
+      const key = `${mon.getFullYear()}-${mon.getMonth() + 1}-${mon.getDate()}`;
       if (!weeks.has(key)) {
         weeks.set(key, { sum: 0, label: `${mon.getDate()} ${MONTH_NAMES[mon.getMonth()]}` });
       }
@@ -81,7 +89,7 @@ function aggregateChartData(raw: DailyVisit[], days: RangeKey) {
   if (days === 30) {
     const buckets = new Map<number, { sum: number; label: string }>();
     for (const item of raw) {
-      const d = new Date(item.date);
+      const d = parseLocalDate(item.date);
       const bucket = Math.floor(d.getDate() / 5);
       const key = d.getFullYear() * 1000 + d.getMonth() * 10 + bucket;
       if (!buckets.has(key)) {
@@ -94,7 +102,7 @@ function aggregateChartData(raw: DailyVisit[], days: RangeKey) {
       .map(([, v]) => ({ label: v.label, count: v.sum }));
   }
   return raw.map((item) => {
-    const d = new Date(item.date);
+    const d = parseLocalDate(item.date);
     return { label: `${DAY_NAMES[d.getDay()]} ${d.getDate()}`, count: item.count };
   });
 }
@@ -256,7 +264,7 @@ export function DashboardAnalyticsPanels({ analyticsByRange }: PanelsProps) {
     (best, item) => (item.count > best.count ? item : best),
     visitsAnalytics.dailyVisits[0] ?? { date: "", count: 0 }
   );
-  const peakDayName = peakDay.date ? DAY_NAMES[new Date(peakDay.date).getDay()] : "-";
+  const peakDayName = peakDay.date ? DAY_NAMES[parseLocalDate(peakDay.date).getDay()] : "-";
 
   const weeklyConversion =
     weeklyAnalytics.totalVisits > 0

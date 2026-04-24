@@ -95,6 +95,13 @@ body {
     animation: chart-fade-in 0.45s ease-out both;
   }
 
+  .input-base {
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition;
+  }
+  .input-base:focus {
+    @apply border-[#1a4f9d] ring-2 ring-[#1a4f9d]/20;
+  }
+
   /* Recharts SVG elemanlarının focus outline ve pointer cursor'ını kaldır */
   .recharts-wrapper,
   .recharts-wrapper *,

@@ -22,6 +22,16 @@ type TrackPayload = {
   referrerSource: string;
 };
 
+// Lokal saat dilimine gore YYYY-MM-DD anahtari uretir.
+// (toISOString UTC'ye cevirdigi icin gece yarisi etrafindaki olaylar yanlis gune yaziliyordu.)
+function localDayKey(value: Date | string | number): string {
+  const d = value instanceof Date ? value : new Date(value);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 export async function trackPageView(input: TrackPayload) {
   if (!hasDatabaseConfig()) return { ok: true };
 
@@ -71,7 +81,7 @@ export async function getAnalyticsSummary(days = 14) {
   for (let i = normalizedDays - 1; i >= 0; i -= 1) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
+    const key = localDayKey(d);
     dateKeys.push(key);
     dailyMap[key] = 0;
   }
@@ -104,7 +114,7 @@ export async function getAnalyticsSummary(days = 14) {
   const referrerMap: Record<string, number> = {};
 
   for (const event of events) {
-    const key = new Date(event.createdAt).toISOString().slice(0, 10);
+    const key = localDayKey(event.createdAt as Date);
 
     if (event.type === "pageview") {
       totalVisits += 1;

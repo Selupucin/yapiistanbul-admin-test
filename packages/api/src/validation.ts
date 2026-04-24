@@ -22,8 +22,24 @@ export const blogSchema = z.object({
 
 export const projectSchema = z.object({
   name: z.string().min(2).max(140),
-  nameEn: z.string().min(2).max(140),
-  link: urlSchema,
+  nameEn: z.string().max(140).optional().default(""),
+  location: z.string().max(160).optional().default(""),
+  locationEn: z.string().max(160).optional().default(""),
+  mapLocation: z.string().max(2000).optional().default(""),
+  totalArea: z.string().max(60).optional().default(""),
+  unitCount: z.coerce.number().int().min(0).max(100000).optional().default(0),
+  unitTypes: z.string().max(200).optional().default(""),
+  blockCount: z.coerce.number().int().min(0).max(1000).optional().default(0),
+  floorCount: z.coerce.number().int().min(0).max(1000).optional().default(0),
+  deliveryDate: z.string().max(60).optional().default(""),
+  status: z.string().max(60).optional().default(""),
+  summary: z.string().max(600).optional().default(""),
+  summaryEn: z.string().max(600).optional().default(""),
+  description: z.string().max(8000).optional().default(""),
+  descriptionEn: z.string().max(8000).optional().default(""),
+  images: z.array(z.string()).max(3).optional().default([]),
+  coverImageIndex: z.coerce.number().int().min(0).max(2).optional().default(0),
+  videoUrl: z.string().max(500).optional().default(""),
 });
 
 export const contactSchema = z.object({

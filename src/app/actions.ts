@@ -106,24 +106,47 @@ export async function deleteBlogAction(formData: FormData) {
   revalidatePath("/blog");
 }
 
-export async function createProjectAction(formData: FormData) {
-  await createProject({
+function projectInputFromFormData(formData: FormData) {
+  const images = formData.getAll("images").map((v) => String(v)).filter(Boolean).slice(0, 3);
+  const rawCover = Number(formData.get("coverImageIndex") || 0);
+  const coverImageIndex = Number.isFinite(rawCover)
+    ? Math.min(Math.max(rawCover, 0), Math.max(images.length - 1, 0))
+    : 0;
+  return {
     name: String(formData.get("name") || ""),
     nameEn: String(formData.get("nameEn") || ""),
-    link: String(formData.get("link") || ""),
-  });
+    location: String(formData.get("location") || ""),
+    locationEn: String(formData.get("locationEn") || ""),
+    mapLocation: String(formData.get("mapLocation") || ""),
+    totalArea: String(formData.get("totalArea") || ""),
+    unitCount: Number(formData.get("unitCount") || 0),
+    unitTypes: String(formData.get("unitTypes") || ""),
+    blockCount: Number(formData.get("blockCount") || 0),
+    floorCount: Number(formData.get("floorCount") || 0),
+    deliveryDate: String(formData.get("deliveryDate") || ""),
+    status: String(formData.get("status") || ""),
+    summary: String(formData.get("summary") || ""),
+    summaryEn: String(formData.get("summaryEn") || ""),
+    description: String(formData.get("description") || ""),
+    descriptionEn: String(formData.get("descriptionEn") || ""),
+    videoUrl: String(formData.get("videoUrl") || ""),
+    images,
+    coverImageIndex,
+  };
+}
+
+export async function createProjectAction(formData: FormData) {
+  await createProject(projectInputFromFormData(formData));
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/projects");
   revalidatePath("/");
   revalidatePath("/projects");
 }
 
 export async function updateProjectAction(formData: FormData) {
-  await updateProject(String(formData.get("id") || ""), {
-    name: String(formData.get("name") || ""),
-    nameEn: String(formData.get("nameEn") || ""),
-    link: String(formData.get("link") || ""),
-  });
+  await updateProject(String(formData.get("id") || ""), projectInputFromFormData(formData));
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/projects");
   revalidatePath("/");
   revalidatePath("/projects");
 }
