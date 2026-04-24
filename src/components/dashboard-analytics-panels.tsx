@@ -106,7 +106,7 @@ function VisitsAreaChart({ data, days }: { data: DailyVisit[]; days: RangeKey })
   return (
     <div className="chart-animate mt-4 h-[260px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={aggregated} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
+        <AreaChart data={aggregated} margin={{ top: 10, right: 12, left: 0, bottom: 0 }} tabIndex={-1}>
           <defs>
             <linearGradient id="visitsArea" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#1a4f9d" stopOpacity={0.32} />
@@ -141,7 +141,7 @@ function ProjectClicksBarChart({ data }: { data: ProjectClick[] }) {
   return (
     <div className="chart-animate mt-4 w-full" style={{ height: Math.max(chartData.length * 36, 160) }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 16, left: 0, bottom: 4 }} barCategoryGap={6}>
+        <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 16, left: 0, bottom: 4 }} barCategoryGap={6} tabIndex={-1}>
           <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" horizontal={false} />
           <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
           <YAxis type="category" dataKey="name" tick={{ fill: "#475569", fontSize: 11 }} tickLine={false} axisLine={false} width={140} />
@@ -167,7 +167,7 @@ function DeviceDonut({ data }: { data: Breakdown[] }) {
     <div className="chart-animate mt-4 grid items-center gap-4 sm:grid-cols-[1fr_auto]">
       <div className="h-[220px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+          <PieChart tabIndex={-1}>
             <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={56} outerRadius={88} paddingAngle={2} stroke="#fff" strokeWidth={2}>
               {chartData.map((_, i) => (
                 <Cell key={i} fill={DEVICE_COLORS[i % DEVICE_COLORS.length]} />
@@ -222,7 +222,7 @@ function ReferrerBarChart({ data }: { data: Breakdown[] }) {
   return (
     <div className="chart-animate mt-4 w-full" style={{ height: Math.max(chartData.length * 32, 160) }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 16, left: 0, bottom: 4 }} barCategoryGap={6}>
+        <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 16, left: 0, bottom: 4 }} barCategoryGap={6} tabIndex={-1}>
           <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" horizontal={false} />
           <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
           <YAxis type="category" dataKey="name" tick={{ fill: "#475569", fontSize: 11 }} tickLine={false} axisLine={false} width={130} />

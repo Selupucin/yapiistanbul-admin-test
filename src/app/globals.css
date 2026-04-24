@@ -94,6 +94,26 @@ body {
   .chart-animate {
     animation: chart-fade-in 0.45s ease-out both;
   }
+
+  /* Recharts SVG elemanlarının focus outline ve pointer cursor'ını kaldır */
+  .recharts-wrapper,
+  .recharts-wrapper *,
+  .recharts-surface {
+    outline: none !important;
+  }
+
+  .recharts-wrapper svg,
+  .recharts-pie-sector path,
+  .recharts-bar-rectangle path,
+  .recharts-sector {
+    cursor: default !important;
+  }
+
+  /* Tooltip cursor (üzerine gelince oluşan dikdörtgen/çizgi vurgusu) görünümünü kaldır */
+  .recharts-tooltip-cursor {
+    fill: transparent !important;
+    stroke: transparent !important;
+  }
 }
 
 @keyframes chart-fade-in {
