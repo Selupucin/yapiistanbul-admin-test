@@ -45,6 +45,18 @@ const projectSchema = new Schema(
     // 1 adet video URL (YouTube, Vimeo veya MP4 linki)
     videoUrl: { type: String, default: "", trim: true },
 
+    // Kat planlari: her kat icin etiket + gorsel
+    floorPlans: {
+      type: [
+        {
+          label: { type: String, required: true, trim: true },
+          image: { type: String, required: true },
+        },
+      ],
+      default: [],
+      _id: false,
+    },
+
     // Geriye uyumluluk: eski "link" alani (yeni projelerde gerekmiyor)
     link: { type: String, default: "", trim: true },
   },

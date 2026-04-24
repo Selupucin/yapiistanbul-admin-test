@@ -27,6 +27,7 @@ type ProjectRow = {
   images?: string[];
   coverImageIndex?: number;
   videoUrl?: string;
+  floorPlans?: { label: string; image: string }[];
   createdAt?: string | Date;
 };
 
@@ -189,6 +190,7 @@ export function ProjectTable({ projects }: { projects: ProjectRow[] }) {
                         images={project.images || []}
                         coverImageIndex={project.coverImageIndex ?? 0}
                         videoUrl={project.videoUrl || ""}
+                        floorPlans={project.floorPlans || []}
                       />
                       <form action={deleteProjectAction}>
                         <input type="hidden" name="id" value={String(project._id)} />

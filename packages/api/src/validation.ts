@@ -40,6 +40,16 @@ export const projectSchema = z.object({
   images: z.array(z.string()).max(3).optional().default([]),
   coverImageIndex: z.coerce.number().int().min(0).max(2).optional().default(0),
   videoUrl: z.string().max(500).optional().default(""),
+  floorPlans: z
+    .array(
+      z.object({
+        label: z.string().min(1).max(60),
+        image: z.string().min(1),
+      })
+    )
+    .max(60)
+    .optional()
+    .default([]),
 });
 
 export const contactSchema = z.object({

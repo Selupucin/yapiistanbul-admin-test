@@ -112,6 +112,23 @@ function projectInputFromFormData(formData: FormData) {
   const coverImageIndex = Number.isFinite(rawCover)
     ? Math.min(Math.max(rawCover, 0), Math.max(images.length - 1, 0))
     : 0;
+
+  let floorPlans: { label: string; image: string }[] = [];
+  const rawFloorPlans = String(formData.get("floorPlans") || "");
+  if (rawFloorPlans) {
+    try {
+      const parsed = JSON.parse(rawFloorPlans);
+      if (Array.isArray(parsed)) {
+        floorPlans = parsed
+          .filter((it) => it && typeof it.label === "string" && typeof it.image === "string" && it.image)
+          .map((it) => ({ label: String(it.label).slice(0, 60), image: String(it.image) }))
+          .slice(0, 60);
+      }
+    } catch {
+      floorPlans = [];
+    }
+  }
+
   return {
     name: String(formData.get("name") || ""),
     nameEn: String(formData.get("nameEn") || ""),
@@ -132,6 +149,7 @@ function projectInputFromFormData(formData: FormData) {
     videoUrl: String(formData.get("videoUrl") || ""),
     images,
     coverImageIndex,
+    floorPlans,
   };
 }
 

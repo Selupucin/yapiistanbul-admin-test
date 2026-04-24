@@ -2,6 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ProjectImagesField } from "@/components/project-images-field";
+import {
+  ProjectFloorPlansField,
+  type FloorPlanItem,
+} from "@/components/project-floor-plans-field";
 import { updateProjectAction } from "@/app/actions";
 
 type ProjectEditDialogProps = {
@@ -25,6 +29,7 @@ type ProjectEditDialogProps = {
   images?: string[];
   coverImageIndex?: number;
   videoUrl?: string;
+  floorPlans?: FloorPlanItem[];
 };
 
 export function ProjectEditDialog(props: ProjectEditDialogProps) {
@@ -224,6 +229,13 @@ export function ProjectFormFields(props: Partial<ProjectEditDialogProps>) {
         <ProjectImagesField
           initialImages={props.images || []}
           initialCoverIndex={props.coverImageIndex ?? 0}
+        />
+      </Field>
+
+      <Field label="Kat Planları" hint="Her kat için seçim yapıp görsel yükleyebilirsiniz">
+        <ProjectFloorPlansField
+          initialPlans={props.floorPlans || []}
+          initialFloorCount={props.floorCount ?? 0}
         />
       </Field>
     </div>
