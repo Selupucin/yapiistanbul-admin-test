@@ -30,6 +30,8 @@ type ProjectEditDialogProps = {
   coverImageIndex?: number;
   videoUrl?: string;
   floorPlans?: FloorPlanItem[];
+  basementCount?: number;
+  parkingFloors?: number[];
 };
 
 export function ProjectEditDialog(props: ProjectEditDialogProps) {
@@ -232,10 +234,12 @@ export function ProjectFormFields(props: Partial<ProjectEditDialogProps>) {
         />
       </Field>
 
-      <Field label="Kat Planları" hint="Her kat için seçim yapıp görsel yükleyebilirsiniz">
+      <Field label="Kat Planları" hint="Önce kat sayısını girin; sonra eksi kat ve plan yükleme adımları açılır">
         <ProjectFloorPlansField
           initialPlans={props.floorPlans || []}
           initialFloorCount={props.floorCount ?? 0}
+          initialBasementCount={props.basementCount ?? 0}
+          initialParkingFloors={props.parkingFloors || []}
         />
       </Field>
     </div>

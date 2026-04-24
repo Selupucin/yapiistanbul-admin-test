@@ -31,6 +31,8 @@ export const projectSchema = z.object({
   unitTypes: z.string().max(200).optional().default(""),
   blockCount: z.coerce.number().int().min(0).max(1000).optional().default(0),
   floorCount: z.coerce.number().int().min(0).max(1000).optional().default(0),
+  basementCount: z.coerce.number().int().min(0).max(20).optional().default(0),
+  parkingFloors: z.array(z.coerce.number().int().min(-20).max(-1)).max(20).optional().default([]),
   deliveryDate: z.string().max(60).optional().default(""),
   status: z.string().max(60).optional().default(""),
   summary: z.string().max(600).optional().default(""),

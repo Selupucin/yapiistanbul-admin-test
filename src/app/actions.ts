@@ -129,6 +129,25 @@ function projectInputFromFormData(formData: FormData) {
     }
   }
 
+  let parkingFloors: number[] = [];
+  const rawParking = String(formData.get("parkingFloors") || "");
+  if (rawParking) {
+    try {
+      const parsed = JSON.parse(rawParking);
+      if (Array.isArray(parsed)) {
+        parkingFloors = parsed
+          .map((v) => Number(v))
+          .filter((v) => Number.isInteger(v) && v <= -1 && v >= -20);
+      }
+    } catch {
+      parkingFloors = [];
+    }
+  }
+  const basementCount = Math.max(
+    0,
+    Math.min(20, Number(formData.get("basementCount") || 0))
+  );
+
   return {
     name: String(formData.get("name") || ""),
     nameEn: String(formData.get("nameEn") || ""),
@@ -150,6 +169,8 @@ function projectInputFromFormData(formData: FormData) {
     images,
     coverImageIndex,
     floorPlans,
+    basementCount,
+    parkingFloors,
   };
 }
 

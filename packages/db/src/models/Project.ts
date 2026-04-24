@@ -20,7 +20,9 @@ const projectSchema = new Schema(
     unitCount: { type: Number, default: 0 }, // Daire sayisi
     unitTypes: { type: String, default: "", trim: true }, // Daire tipleri (orn: "1+1, 2+1, 3+1")
     blockCount: { type: Number, default: 0 }, // Blok sayisi
-    floorCount: { type: Number, default: 0 }, // Kat sayisi
+    floorCount: { type: Number, default: 0 }, // Kat sayisi (yer ustu, zemin haric pozitif kat)
+    basementCount: { type: Number, default: 0 }, // Eksi kat sayisi (bodrum + altlari)
+    parkingFloors: { type: [Number], default: [] }, // Otopark olarak isaretlenen eksi katlar (orn: [-1, -2])
     deliveryDate: { type: String, default: "", trim: true }, // Teslim tarihi (orn: "2026 Q4")
     status: { type: String, default: "", trim: true }, // Durum: "Satista", "Insaat asamasinda", "Tamamlandi"
 
