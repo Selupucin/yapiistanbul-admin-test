@@ -114,6 +114,12 @@ export function ProjectFloorPlansField({
             ? `Kat sayısı: ${floorCount}. Aynı katın görseli yeniden yüklenirse üzerine yazılır.`
             : "Önce yukarıdaki “Kat sayısı” alanını girin; seçenekler buna göre üretilir."}
         </p>
+        <p className="mt-1 text-[11px] font-medium text-[#0c2c64]">
+          Önerilen görsel: uzun kenarı <strong>1600 px</strong> (ideal 1600×1200
+          veya benzeri oran), <strong>PNG</strong> ya da yüksek kaliteli{" "}
+          <strong>JPG</strong>, dosya boyutu en fazla ~2 MB. Görsel orijinal
+          oranıyla görüntülenir; etrafında boşluk oluşmaz.
+        </p>
       </div>
 
       {plans.length > 0 ? (
